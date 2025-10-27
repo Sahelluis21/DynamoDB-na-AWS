@@ -5,60 +5,110 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>📜 Fatos Históricos</title>
   <style>
+    :root {
+      --bg: #121212;
+      --bg-card: #1e1e1e;
+      --bg-list: #222;
+      --text: #e0e0e0;
+      --accent: #0d6efd;
+      --border: #333;
+      --sucesso: #28a745;
+      --erro: #dc3545;
+      --aviso: #ffc107;
+    }
+
     body {
-      font-family: Arial, sans-serif;
-      background-color: #f7f7f7;
+      font-family: "Segoe UI", Arial, sans-serif;
+      background-color: var(--bg);
+      color: var(--text);
       margin: 0;
-      padding: 20px;
+      padding: 40px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
     }
 
     h1 {
-      text-align: center;
-      color: #333;
+      margin-bottom: 30px;
     }
 
-    form {
+    .container {
       display: flex;
       justify-content: center;
-      gap: 10px;
-      margin-bottom: 20px;
+      gap: 40px;
       flex-wrap: wrap;
+      max-width: 1100px;
+      width: 100%;
     }
 
-    input, button {
-      padding: 10px;
-      font-size: 16px;
+    /* Cards */
+    .card {
+      background: var(--bg-card);
+      border-radius: 10px;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+      padding: 25px;
+      flex: 1;
+      min-width: 320px;
+      max-width: 500px;
+    }
+
+    /* Formulário */
+    form {
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
     }
 
     input {
-      width: 180px;
+      padding: 12px;
+      border-radius: 6px;
+      border: 1px solid var(--border);
+      background: #2a2a2a;
+      color: var(--text);
+      font-size: 15px;
+      outline: none;
+    }
+
+    input:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 4px rgba(13,110,253,0.4);
     }
 
     button {
-      background-color: #007bff;
+      background-color: var(--accent);
       color: white;
       border: none;
+      border-radius: 6px;
+      padding: 12px;
+      font-size: 16px;
       cursor: pointer;
-      border-radius: 5px;
+      transition: background-color 0.2s;
     }
 
     button:hover {
-      background-color: #0056b3;
+      background-color: #0b5ed7;
+    }
+
+    /* Lista de fatos */
+    .lista-container {
+      background: var(--bg-list);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      max-height: 400px; /* altura fixa com rolagem */
+      overflow-y: auto;
+      scrollbar-width: thin;
+      scrollbar-color: #555 #1a1a1a;
     }
 
     ul {
       list-style: none;
+      margin: 0;
       padding: 0;
-      max-width: 600px;
-      margin: 0 auto;
-      background: white;
-      border-radius: 8px;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
     }
 
     li {
-      padding: 12px 20px;
-      border-bottom: 1px solid #eee;
+      padding: 15px 20px;
+      border-bottom: 1px solid var(--border);
       display: flex;
       justify-content: space-between;
       align-items: center;
@@ -68,29 +118,44 @@
       border-bottom: none;
     }
 
-    .acoes button {
-      margin-left: 10px;
-      background-color: #dc3545;
-      color: white;
-      border: none;
-      padding: 6px 10px;
-      border-radius: 4px;
-      cursor: pointer;
-      font-size: 14px;
+    li:hover {
+      background: #2a2a2a;
     }
 
-    .acoes button.editar {
-      background-color: #28a745;
+    /* Botões de ação */
+    .acoes {
+      display: flex;
+      gap: 8px;
+    }
+
+    .acoes button {
+      width: 32px;
+      height: 32px;
+      border-radius: 4px;
+      font-size: 14px;
+      padding: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #fff;
+    }
+
+    .acoes .editar {
+      background-color: var(--sucesso);
+    }
+
+    .acoes .excluir {
+      background-color: var(--erro);
     }
 
     .acoes button:hover {
-      opacity: 0.9;
+      opacity: 0.8;
     }
 
     /* Mensagens */
     #mensagem {
-      max-width: 600px;
-      margin: 0 auto 20px auto;
+      max-width: 1100px;
+      margin-bottom: 20px;
       padding: 12px;
       border-radius: 5px;
       text-align: center;
@@ -99,52 +164,65 @@
     }
 
     .sucesso {
-      background-color: #d4edda;
-      color: #155724;
-      border: 1px solid #c3e6cb;
+      background-color: #1f5132;
+      color: #a6f1b8;
+      border: 1px solid #2e7d32;
     }
 
     .erro {
-      background-color: #f8d7da;
-      color: #721c24;
-      border: 1px solid #f5c6cb;
+      background-color: #611a1a;
+      color: #f8d7da;
+      border: 1px solid #dc3545;
     }
 
     .carregando {
-      background-color: #fff3cd;
-      color: #856404;
-      border: 1px solid #ffeeba;
+      background-color: #665c1a;
+      color: #ffeeba;
+      border: 1px solid #ffca2c;
+    }
+
+    @media (max-width: 768px) {
+      .container {
+        flex-direction: column;
+        align-items: center;
+      }
     }
   </style>
 </head>
 <body>
   <h1>📜 Fatos Históricos</h1>
 
-  <!-- Área para mensagens -->
   <div id="mensagem"></div>
 
-  <!-- Formulário -->
-  <form id="form-fato">
-    <input type="number" id="ano" placeholder="Ano" required />
-    <input type="text" id="descricao" placeholder="Descrição do fato" required />
-    <button type="submit">Adicionar</button>
-  </form>
+  <div class="container">
+    <!-- Formulário -->
+    <div class="card">
+      <h2>Adicionar Fato</h2>
+      <form id="form-fato">
+        <input type="number" id="ano" placeholder="Ano" required />
+        <input type="text" id="descricao" placeholder="Descrição do fato" required />
+        <button type="submit">Adicionar</button>
+      </form>
+    </div>
 
-  <!-- Lista -->
-  <ul id="lista-fatos"></ul>
+    <!-- Lista -->
+    <div class="card">
+      <h2>Lista de Fatos</h2>
+      <div class="lista-container">
+        <ul id="lista-fatos"></ul>
+      </div>
+    </div>
+  </div>
 
   <script>
     const API_BASE_URL = 'https://85b0q4fd0d.execute-api.us-east-1.amazonaws.com/v1';
 
-    // Exibir mensagens visuais
     function exibirMensagem(texto, tipo = 'sucesso') {
       const msg = document.getElementById('mensagem');
       msg.textContent = texto;
       msg.className = tipo;
       msg.style.display = 'block';
-      setTimeout(() => {
-        msg.style.display = 'none';
-      }, 4000);
+      setTimeout(() => { msg.style.display = 'none'; }, 4000);
     }
 
     async function carregarFatos() {
@@ -155,7 +233,6 @@
         const response = await fetch(`${API_BASE_URL}/facts`);
         if (!response.ok) throw new Error(`Erro HTTP ${response.status}`);
         const fatos = await response.json();
-
         lista.innerHTML = '';
 
         if (fatos.length === 0) {
@@ -166,15 +243,14 @@
         fatos.forEach(fato => {
           const item = document.createElement('li');
           item.innerHTML = `
-            <span>${fato.year} - ${fato.fact}</span>
+            <span><strong>${fato.year}</strong> — ${fato.fact}</span>
             <span class="acoes">
-              <button class="editar" onclick="editarFato('${fato.year}')">Editar</button>
-              <button onclick="deletarFato('${fato.year}')">Excluir</button>
+              <button class="editar" title="Editar" onclick="editarFato('${fato.year}')">✏️</button>
+              <button class="excluir" title="Excluir" onclick="deletarFato('${fato.year}')">🗑️</button>
             </span>
           `;
           lista.appendChild(item);
         });
-
       } catch (error) {
         console.error('Erro ao carregar fatos:', error);
         exibirMensagem('❌ Erro ao carregar fatos. Verifique a API.', 'erro');
@@ -185,7 +261,6 @@
       event.preventDefault();
       const year = document.getElementById('ano').value;
       const fact = document.getElementById('descricao').value;
-
       if (!year || !fact.trim()) {
         exibirMensagem('⚠️ Preencha todos os campos antes de adicionar.', 'carregando');
         return;
@@ -203,21 +278,19 @@
         document.getElementById('form-fato').reset();
         exibirMensagem('✅ Fato adicionado com sucesso!');
         await carregarFatos();
-      } catch (error) {
+      } catch {
         exibirMensagem('❌ Erro ao adicionar fato. Verifique a conexão.', 'erro');
       }
     }
 
     async function deletarFato(year) {
       if (!confirm(`Tem certeza que deseja excluir o fato de ${year}?`)) return;
-
       try {
         const response = await fetch(`${API_BASE_URL}/facts/${year}`, { method: 'DELETE' });
         if (!response.ok) throw new Error('Erro ao deletar fato.');
-
         exibirMensagem('🗑️ Fato excluído com sucesso!');
         await carregarFatos();
-      } catch (error) {
+      } catch {
         exibirMensagem('❌ Erro ao excluir fato.', 'erro');
       }
     }
@@ -225,19 +298,16 @@
     async function editarFato(year) {
       const novoTexto = prompt('Digite a nova descrição:');
       if (!novoTexto) return;
-
       try {
         const response = await fetch(`${API_BASE_URL}/facts/${year}`, {
           method: 'PUT',
           headers: {'Content-Type': 'application/json'},
           body: JSON.stringify({ fact: novoTexto })
         });
-
         if (!response.ok) throw new Error('Erro ao editar fato.');
-
         exibirMensagem('✏️ Fato atualizado com sucesso!');
         await carregarFatos();
-      } catch (error) {
+      } catch {
         exibirMensagem('❌ Erro ao editar fato.', 'erro');
       }
     }
