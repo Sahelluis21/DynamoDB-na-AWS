@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>📜 Fatos Históricos</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f7f7f7;
+      margin: 0;
+      padding: 20px;
+    }
+
+    h1 {
+      text-align: center;
+      color: #333;
+    }
+
+    form {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+    }
+
+    input, button {
+      padding: 10px;
+      font-size: 16px;
+    }
+
+    input {
+      width: 180px;
+    }
+
+    button {
+      background-color: #007bff;
+      color: white;
+      border: none;
+      cursor: pointer;
+      border-radius: 5px;
+    }
+
+    button:hover {
+      background-color: #0056b3;
+    }
+
+    ul {
+      list-style: none;
+      padding: 0;
+      max-width: 600px;
+      margin: 0 auto;
+      background: white;
+      border-radius: 8px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+
+    li {
+      padding: 12px 20px;
+      border-bottom: 1px solid #eee;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    li:last-child {
+      border-bottom: none;
+    }
+
+    .acoes button {
+      margin-left: 10px;
+      background-color: #dc3545;
+      color: white;
+      border: none;
+      padding: 6px 10px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 14px;
+    }
+
+    .acoes button.editar {
+      background-color: #28a745;
+    }
+
+    .acoes button:hover {
+      opacity: 0.9;
+    }
+
+    /* Mensagens */
+    #mensagem {
+      max-width: 600px;
+      margin: 0 auto 20px auto;
+      padding: 12px;
+      border-radius: 5px;
+      text-align: center;
+      font-weight: bold;
+      display: none;
+    }
+
+    .sucesso {
+      background-color: #d4edda;
+      color: #155724;
+      border: 1px solid #c3e6cb;
+    }
+
+    .erro {
+      background-color: #f8d7da;
+      color: #721c24;
+      border: 1px solid #f5c6cb;
+    }
+
+    .carregando {
+      background-color: #fff3cd;
+      color: #856404;
+      border: 1px solid #ffeeba;
+    }
+  </style>
+</head>
+<body>
+  <h1>📜 Fatos Históricos</h1>
+
+  <!-- Área para mensagens -->
+  <div id="mensagem"></div>
+
+  <!-- Formulário -->
+  <form id="form-fato">
+    <input type="number" id="ano" placeholder="Ano" required />
+    <input type="text" id="descricao" placeholder="Descrição do fato" required />
+    <button type="submit">Adicionar</button>
+  </form>
+
+  <!-- Lista -->
+  <ul id="lista-fatos"></ul>
+
+  <script>
+    const API_BASE_URL = 'https://85b0q4fd0d.execute-api.us-east-1.amazonaws.com/v1';
+
+    // Exibir mensagens visuais
+    function exibirMensagem(texto, tipo = 'sucesso') {
+      const msg = document.getElementById('mensagem');
+      msg.textContent = texto;
+      msg.className = tipo;
+      msg.style.display = 'block';
+      setTimeout(() => {
+        msg.style.display = 'none';
+      }, 4000);
+    }
+
+    async function carregarFatos() {
+      const lista = document.getElementById('lista-fatos');
+      lista.innerHTML = '<li>Carregando...</li>';
+
+      try {
+        const response = await fetch(`${API_BASE_URL}/facts`);
+        if (!response.ok) throw new Error(`Erro HTTP ${response.status}`);
+        const fatos = await response.json();
+
+        lista.innerHTML = '';
+
+        if (fatos.length === 0) {
+          lista.innerHTML = '<li>Nenhum fato encontrado.</li>';
+          return;
+        }
+
+        fatos.forEach(fato => {
+          const item = document.createElement('li');
+          item.innerHTML = `
+            <span>${fato.year} - ${fato.fact}</span>
+            <span class="acoes">
+              <button class="editar" onclick="editarFato('${fato.year}')">Editar</button>
+              <button onclick="deletarFato('${fato.year}')">Excluir</button>
+            </span>
+          `;
+          lista.appendChild(item);
+        });
+
+      } catch (error) {
+        console.error('Erro ao carregar fatos:', error);
+        exibirMensagem('❌ Erro ao carregar fatos. Verifique a API.', 'erro');
+      }
+    }
+
+    async function adicionarFato(event) {
+      event.preventDefault();
+      const year = document.getElementById('ano').value;
+      const fact = document.getElementById('descricao').value;
+
+      if (!year || !fact.trim()) {
+        exibirMensagem('⚠️ Preencha todos os campos antes de adicionar.', 'carregando');
+        return;
+      }
+
+      try {
+        const response = await fetch(`${API_BASE_URL}/facts`, {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({ year, fact })
+        });
+
+        if (!response.ok) throw new Error('Erro ao adicionar fato.');
+
+        document.getElementById('form-fato').reset();
+        exibirMensagem('✅ Fato adicionado com sucesso!');
+        await carregarFatos();
+      } catch (error) {
+        exibirMensagem('❌ Erro ao adicionar fato. Verifique a conexão.', 'erro');
+      }
+    }
+
+    async function deletarFato(year) {
+      if (!confirm(`Tem certeza que deseja excluir o fato de ${year}?`)) return;
+
+      try {
+        const response = await fetch(`${API_BASE_URL}/facts/${year}`, { method: 'DELETE' });
+        if (!response.ok) throw new Error('Erro ao deletar fato.');
+
+        exibirMensagem('🗑️ Fato excluído com sucesso!');
+        await carregarFatos();
+      } catch (error) {
+        exibirMensagem('❌ Erro ao excluir fato.', 'erro');
+      }
+    }
+
+    async function editarFato(year) {
+      const novoTexto = prompt('Digite a nova descrição:');
+      if (!novoTexto) return;
+
+      try {
+        const response = await fetch(`${API_BASE_URL}/facts/${year}`, {
+          method: 'PUT',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({ fact: novoTexto })
+        });
+
+        if (!response.ok) throw new Error('Erro ao editar fato.');
+
+        exibirMensagem('✏️ Fato atualizado com sucesso!');
+        await carregarFatos();
+      } catch (error) {
+        exibirMensagem('❌ Erro ao editar fato.', 'erro');
+      }
+    }
+
+    document.addEventListener('DOMContentLoaded', carregarFatos);
+    document.getElementById('form-fato').addEventListener('submit', adicionarFato);
+  </script>
+</body>
+</html>
